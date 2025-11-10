@@ -1,17 +1,19 @@
 import axios from 'axios';
-//podemos crear una instancia para evitar escribir la misma direccion
-axios,create({
-    baseURL: 'http://localhost'
-})
 
+// ✅ Creamos una instancia de axios con la URL base del backend en Render
+const api = axios.create({
+  baseURL: import.meta.env.MODE === 'development'
+  ? 'http://127.0.0.1:8000/api/'
+  : 'https://django-react-vite.onrender.com/api/'
+  // 👈 tu backend en Render
+});
 
-export const getAllTasks = () => { // cuando se ejecute la funcion digo que ejecute axios
-    return axios.get('http://127.0.0.1:8000/api/Productos/') 
-//peticion del backend de donde pedimos  informacion
+// ✅ Función para obtener todos los productos
+export const getAllTasks = () => {
+  return api.get('Productos/');  // Axios añade automáticamente la baseURL
+};
 
-}
-
-
-export const createTask = (task) =>{
-    return axios.post('http://127.0.0.1:8000/api/Productos/') 
-}
+// ✅ Función para crear un nuevo producto
+export const createTask = (task) => {
+  return api.post('Productos/', task);  // enviamos los datos al backend
+};
