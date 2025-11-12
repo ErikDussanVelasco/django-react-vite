@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route,Navigate } from "react-router-dom";
 import {Page1} from "./pages/Page1";  // Importación correcta
 import {Pageform} from  "./pages/Pageform";
 import {Navigation} from './components/Navegation';
+//librerias visuales
+import { Toaster } from 'react-hot-toast';
 
 
 function App() {
@@ -16,6 +18,7 @@ function App() {
         <Route path="/tasks-create" element={<Pageform />} /> 
         <Route path="/tasks/:id" element={<Pageform />} /> 
       </Routes>
+      <Toaster/>
     </BrowserRouter>
   );
 }

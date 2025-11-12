@@ -1,3 +1,5 @@
+//axios me permite comunicarme y traer y enviar datos al backend y viceversa
+
 import axios from 'axios';
 
 // ✅ Creamos una instancia de axios con la URL base del backend en Render
@@ -10,11 +12,11 @@ const api = axios.create({
 // ✅ Función para obtener todos los productos
   export const getAllTasks = () =>  api.get('Productos/');  // Axios añade automáticamente la baseURL
 
-
+  export const getTask = (id) => api.get (`Productos/${id}/`)
 
 // ✅ Función para crear un nuevo producto (post)
   export const createTask = (task) => api.post('Productos/', task);  // enviamos los datos al backend
 
   export const deleteTask = (id) => api.delete(`Productos/${id}/`)
 
-
+  export const updateTask =  (id, task) => api.put(`Productos/${id}/`,task)
