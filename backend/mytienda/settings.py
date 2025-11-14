@@ -5,10 +5,10 @@ import dj_database_url            # ✅ Importa dj-database-url
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ⚙️ Cargar variables desde el .env
-SECRET_KEY = config('SECRET_KEY')
-DEBUG = config('DEBUG', default=False, cast=bool)
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-dev-key-change-in-production')
+DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -17,6 +17,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'tailwind',
     'rest_framework',
     'corsheaders',
     'inventario',
@@ -53,7 +54,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'mytienda.wsgi.application'
 
-# ✅ Nueva configuración de base de datos (Supabase / PostgreSQL)
+# ✅ Configuración de base de datos (SUPABASE PostgreSQL)
+# Lee directamente del .env
 DATABASES = {
     'default': dj_database_url.parse(config('DATABASE_URL'))
 }

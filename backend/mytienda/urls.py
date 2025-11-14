@@ -4,10 +4,13 @@ from django.urls import path, include
 from django.views.generic import RedirectView
 
 
-urlpatterns = [ # son los enlaces que los ususarios pueden visitar 
+urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', RedirectView.as_view(url='/accounts/login/', permanent=False)),  # Redirige a login por defecto
-    path('', include('inventario.urls')),
+    path('', RedirectView.as_view(url='/accounts/login/', permanent=False)),
     
-    path('accounts/', include('accounts.urls')),  # 👈 Importante: path completo
+    # Rutas de autenticación
+    path('accounts/', include('accounts.urls')),
+    
+    # Rutas del inventario
+    path('inventario/', include('inventario.urls')),
 ]

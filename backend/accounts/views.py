@@ -20,7 +20,7 @@ class RegisterTemplateView(View):
     """Vista de registro con template HTML"""
     def get(self, request):
         if request.user.is_authenticated:
-            return redirect('home')
+            return redirect('inventario_dashboard')
         return render(request, 'accounts/register.html')
     
     def post(self, request):
@@ -60,7 +60,7 @@ class RegisterTemplateView(View):
             )
             login(request, user)
             messages.success(request, f'¡Bienvenido {username}!')
-            return redirect('home')
+            return redirect('inventario_dashboard')
         except Exception as e:
             messages.error(request, f'Error al registrar: {str(e)}')
             return render(request, 'accounts/register.html')
@@ -70,7 +70,7 @@ class LoginTemplateView(View):
     """Vista de login con template HTML"""
     def get(self, request):
         if request.user.is_authenticated:
-            return redirect('home')
+            return redirect('inventario_dashboard')
         return render(request, 'accounts/login.html')
     
     def post(self, request):
@@ -84,12 +84,11 @@ class LoginTemplateView(View):
         # Autenticar usando el correo
         try:
             user = User.objects.get(email=email)
-            user = authenticate(request, username=user.username, password=password)
-            
-            if user is not None:
+            # Verificar la contraseña
+            if user.check_password(password):
                 login(request, user)
                 messages.success(request, f'¡Bienvenido de vuelta {user.username}!')
-                return redirect('home')
+                return redirect('inventario_dashboard')
             else:
                 messages.error(request, 'Contraseña incorrecta')
                 return render(request, 'accounts/login.html')
@@ -111,7 +110,7 @@ class HomeTemplateView(View):
     def get(self, request):
         if not request.user.is_authenticated:
             return redirect('login')
-        return render(request, 'accounts/home.html', {
+        return render(request, 'inventario/dashboard.html', {
             'user': request.user
         })
 
@@ -127,18 +126,21 @@ class LoginView(APIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data
-
-        refresh = RefreshToken.for_user(user)
-        return Response({
-            "user": {
-                "id": user.id,
-                "username": user.username,
-                "email": user.email
-            },
-            "refresh": str(refresh),
-            "access": str(refresh.access_token)
-        })
+        user = serializer.validated_data.get('user')
+        
+        if user:
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email
+                },
+                "refresh": str(refresh),
+                "access": str(refresh.access_token)
+            })
+        else:
+            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserView(APIView):
@@ -149,6 +151,6 @@ class UserView(APIView):
         return Response({
             "id": user.id,
             "username": user.username,
-            "email": user.emailA
+            "email": user.email
         })
 

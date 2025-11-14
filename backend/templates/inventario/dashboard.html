@@ -1,0 +1,134 @@
+{% extends 'inventario/base.html' %}
+{% block title %}Dashboard - Stock Master{% endblock %}
+{% block page_title %}Overview{% endblock %}
+
+{% block content %}
+
+<!-- TARJETAS DE ESTADÍSTICAS -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+
+    <!-- Total Productos -->
+    <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+        <div class="flex justify-between items-start">
+            <div>
+                <p class="text-gray-500 text-sm font-medium">Total Productos</p>
+                <h3 class="text-4xl font-bold text-gray-800 mt-2">{{ total_productos }}</h3>
+                <p class="text-green-600 text-sm mt-2">↗ 12% desde ayer</p>
+            </div>
+            <span class="text-4xl">📦</span>
+        </div>
+    </div>
+
+    <!-- Stock Total -->
+    <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+        <div class="flex justify-between items-start">
+            <div>
+                <p class="text-gray-500 text-sm font-medium">Stock Total</p>
+                <h3 class="text-4xl font-bold text-blue-600 mt-2">{{ stock_total }}</h3>
+                <p class="text-blue-600 text-sm mt-2">unidades disponibles</p>
+            </div>
+            <span class="text-4xl">📊</span>
+        </div>
+    </div>
+
+    <!-- Movimientos -->
+    <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+        <div class="flex justify-between items-start">
+            <div>
+                <p class="text-gray-500 text-sm font-medium">Movimientos Hoy</p>
+                <h3 class="text-4xl font-bold text-green-600 mt-2">{{ movimientos|length }}</h3>
+                <p class="text-green-600 text-sm mt-2">transacciones registradas</p>
+            </div>
+            <span class="text-4xl">↔️</span>
+        </div>
+    </div>
+
+    <!-- Acciones Rápidas -->
+    <div class="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl shadow hover:shadow-lg transition text-white">
+        <div class="flex justify-between items-start">
+            <div>
+                <p class="text-blue-100 text-sm font-medium">Acción Rápida</p>
+                <h3 class="text-lg font-bold mt-2">Crear Producto</h3>
+                <a href="{% url 'producto_crear' %}" class="text-blue-100 text-sm mt-2 inline-block hover:underline">
+                    Ir ahora →
+                </a>
+            </div>
+            <span class="text-4xl">⚡</span>
+        </div>
+    </div>
+
+</div>
+
+<!-- BOTONES DE ACCIÓN -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+    <a href="{% url 'producto_crear' %}" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg transition flex items-center justify-center">
+        <span class="mr-2">➕</span> Nuevo Producto
+    </a>
+    <a href="{% url 'inventario_movimiento' %}" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition flex items-center justify-center">
+        <span class="mr-2">↔️</span> Registrar Movimiento
+    </a>
+    <a href="{% url 'producto_lista' %}" class="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 px-6 rounded-lg transition flex items-center justify-center">
+        <span class="mr-2">📋</span> Ver Inventario
+    </a>
+</div>
+
+<!-- TABLA DE MOVIMIENTOS RECIENTES -->
+<div class="bg-white rounded-xl shadow overflow-hidden">
+    <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+        <h2 class="text-xl font-bold text-gray-800 flex items-center">
+            <span class="mr-2">📝</span>Movimientos Recientes
+        </h2>
+    </div>
+
+    {% if movimientos %}
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead>
+                <tr class="bg-gray-100 border-b border-gray-200">
+                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Producto</th>
+                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Tipo</th>
+                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Cantidad</th>
+                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Referencia</th>
+                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mov in movimientos|slice:":10" %}
+                <tr class="border-b border-gray-100 hover:bg-gray-50 transition">
+                    <td class="px-6 py-4 text-sm font-medium text-gray-800">{{ mov.producto.nombre }}</td>
+                    <td class="px-6 py-4 text-sm">
+                        {% if mov.tipo == 'ENTRADA' %}
+                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold">📥 ENTRADA</span>
+                        {% else %}
+                            <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-xs font-semibold">📤 SALIDA</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-sm font-semibold text-gray-800">
+                        {% if mov.tipo == 'ENTRADA' %}
+                            <span class="text-green-600">+{{ mov.cantidad }}</span>
+                        {% else %}
+                            <span class="text-red-600">-{{ mov.cantidad }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-600">
+                        {{ mov.numero_referencia|default:"—" }}
+                    </td>
+                    <td class="px-6 py-4 text-sm">
+                        <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs">✓ Completado</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="px-6 py-12 text-center">
+        <p class="text-gray-500 text-lg">📭 No hay movimientos registrados</p>
+        <a href="{% url 'inventario_movimiento' %}" class="text-blue-600 hover:underline mt-4 inline-block font-semibold">
+            Crear el primer movimiento →
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

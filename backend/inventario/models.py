@@ -10,10 +10,10 @@ class Producto(models.Model):#representa el catálogo base: nombre, precio, cód
  # la cantidad actual stock pertenece al prducto pero los movimientos que modifican todo son del inventario
     codigo = models.IntegerField(unique=True)#Define que este campo almacenará números enteros. y el (unique=true) es una restriccion #Esta es una restricción clave. Asegura que no puedan existir dos productos con el mismo código.
     nombre = models.CharField(max_length=100)# La cadena charfield se utiliz para guardar cadenas de texto cortas y la restriccion max lengeth obliga que no tenga mas de 100 caracteres
-    descripcion= models.TextField(blank=True, null=True)
+    stock = models.IntegerField(default= 0)
     precio_compra = models.DecimalField(max_digits=10, decimal_places=3)# esta cadena se utiliza generalmente para dinero  y restinge max 10 digitos y maximos deciamels despues de la coma
     precio_venta = models.DecimalField(max_digits=10, decimal_places=3)# esta cadena se utiliza generalmente para dinero  y restinge max 10 digitos y maximos deciamels despues de la coma
-    stock = models.IntegerField(default= 0)
+    
 
     def __str__(self):
         return f"{self.nombre} ({self.codigo})"
@@ -22,8 +22,8 @@ class Producto(models.Model):#representa el catálogo base: nombre, precio, cód
 class Inventario(models.Model):
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name="movimientos")
     tipo = models.CharField(max_length=10, choices=[('ENTRADA', 'Entrada'), ('SALIDA', 'Salida')])
+    
     cantidad = models.IntegerField()
-    fecha = models.DateTimeField(auto_now_add=True)
     numero_referencia = models.CharField(max_length=20, unique=True, blank=True, null=True)
 
     def __str__(self):

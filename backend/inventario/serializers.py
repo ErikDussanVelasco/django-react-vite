@@ -13,5 +13,5 @@ class InventarioSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Inventario
-        fields = ['id', 'producto', 'producto_nombre', 'tipo', 'cantidad', 'fecha']
+        fields = ['id', 'producto', 'producto_nombre', 'tipo', 'cantidad']
 
