@@ -7,6 +7,12 @@ from rest_framework import viewsets
 from .models import Producto, Inventario
 from .serializers import ProductoSerializer, InventarioSerializer
 
+from .models import (
+    Producto, Inventario,
+    Proveedor, OrdenCompra, AlertaInventario
+)
+
+
 
 # ==================== VISTAS API (REST) ====================
 
@@ -123,3 +129,233 @@ def inventario_movimiento(request):
     
     productos = Producto.objects.all()
     return render(request, 'inventario/movimiento_form.html', {'productos': productos})
+
+# ===========================
+# PROVEEDORES
+# ===========================
+
+@login_required(login_url='login')
+def proveedor_lista(request):
+    proveedores = Proveedor.objects.all()
+    return render(request, 'inventario/proveedor_lista.html', {'proveedores': proveedores})
+
+
+@login_required(login_url='login')
+def proveedor_crear(request):
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        telefono = request.POST.get('telefono')
+        direccion = request.POST.get('direccion')
+        correo = request.POST.get('correo')
+
+        if not all([nombre, telefono, direccion, correo]):
+            messages.error(request, "Todos los campos son obligatorios")
+            return redirect('proveedor_crear')
+
+        Proveedor.objects.create(
+            nombre=nombre,
+            telefono=telefono,
+            direccion=direccion,
+            correo=correo
+        )
+        messages.success(request, f"Proveedor '{nombre}' creado correctamente")
+        return redirect('proveedor_lista')
+
+    return render(request, 'inventario/proveedor_form.html')
+
+# ----------------------
+# PROVEEDOR: editar, borrar, detalle (+historial)
+# ----------------------
+
+@login_required(login_url='login')
+def proveedor_editar(request, proveedor_id):
+    prov = get_object_or_404(Proveedor, id=proveedor_id)
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        telefono = request.POST.get('telefono')
+        direccion = request.POST.get('direccion')
+        correo = request.POST.get('correo')
+
+        if not all([nombre, telefono, direccion, correo]):
+            messages.error(request, "Todos los campos son obligatorios")
+            return redirect('proveedor_editar', proveedor_id=proveedor_id)
+
+        prov.nombre = nombre
+        prov.telefono = telefono
+        prov.direccion = direccion
+        prov.correo = correo
+        prov.save()
+
+        messages.success(request, f"Proveedor '{prov.nombre}' actualizado")
+        return redirect('proveedor_lista')
+
+    return render(request, 'inventario/proveedor_form.html', {'proveedor': prov, 'editar': True})
+
+
+@login_required(login_url='login')
+def proveedor_eliminar(request, proveedor_id):
+    prov = get_object_or_404(Proveedor, id=proveedor_id)
+    if request.method == 'POST':
+        nombre = prov.nombre
+        prov.delete()
+        messages.success(request, f"Proveedor '{nombre}' eliminado")
+        return redirect('proveedor_lista')
+    return render(request, 'inventario/proveedor_confirm_delete.html', {'proveedor': prov})
+
+
+@login_required(login_url='login')
+def proveedor_detalle(request, proveedor_id):
+    prov = get_object_or_404(Proveedor, id=proveedor_id)
+    # historial de ordenes asociadas
+    ordenes = prov.ordenes.all().order_by('-fecha_creacion')
+    return render(request, 'inventario/proveedor_detalle.html', {'proveedor': prov, 'ordenes': ordenes})
+
+# ===========================
+# ÓRDENES DE COMPRA
+# ===========================
+
+@login_required(login_url='login')
+def orden_lista(request):
+    ordenes = OrdenCompra.objects.all().order_by('-id')
+    return render(request, 'inventario/orden_lista.html', {'ordenes': ordenes})
+
+
+@login_required(login_url='login')
+def orden_crear(request):
+    proveedores = Proveedor.objects.all()
+    productos = Producto.objects.all()
+
+    if request.method == 'POST':
+        proveedor_id = request.POST.get('proveedor')
+        producto_id = request.POST.get('producto')
+        cantidad = request.POST.get('cantidad')
+        costo_unitario = request.POST.get('costo_unitario')
+
+        if not all([proveedor_id, producto_id, cantidad, costo_unitario]):
+            messages.error(request, "Por favor completa todos los campos")
+            return redirect('orden_crear')
+
+        proveedor = Proveedor.objects.get(id=proveedor_id)
+        producto = Producto.objects.get(id=producto_id)
+        cantidad = int(cantidad)
+        costo_unitario = float(costo_unitario)
+
+        subtotal = cantidad * costo_unitario
+
+        OrdenCompra.objects.create(
+            proveedor=proveedor,
+            producto=producto,
+            cantidad=cantidad,
+            costo_unitario=costo_unitario,
+            subtotal=subtotal,
+            estado='PENDIENTE'
+        )
+
+        messages.success(
+            request,
+            f"Orden creada: {cantidad} unidades de {producto.nombre} para el proveedor {proveedor.nombre}"
+        )
+        return redirect('orden_lista')
+
+    return render(request, 'inventario/orden_form.html', {
+        'proveedores': proveedores,
+        'productos': productos
+    })
+
+
+@login_required(login_url='login')
+def orden_recibir(request, orden_id):
+    orden = get_object_or_404(OrdenCompra, id=orden_id)
+
+    if orden.estado == 'RECIBIDA':
+        messages.warning(request, "La orden ya fue marcada como recibida")
+        return redirect('orden_lista')
+
+    # MÉTODO DEL MODELO: aumenta stock + crea alerta
+    orden.recibir()
+
+    messages.success(
+        request,
+        f"Orden OC-{orden.id} recibida. Stock actualizado correctamente."
+    )
+    return redirect('orden_lista')
+
+# ----------------------
+# ORDEN: detalle, editar (parcial), cancelar
+# ----------------------
+
+@login_required(login_url='login')
+def orden_detalle(request, orden_id):
+    oc = get_object_or_404(OrdenCompra, id=orden_id)
+    return render(request, 'inventario/orden_detalle.html', {'orden': oc})
+
+
+@login_required(login_url='login')
+def orden_editar(request, orden_id):
+    oc = get_object_or_404(OrdenCompra, id=orden_id)
+    if oc.estado == 'RECIBIDA':
+        messages.warning(request, "No se puede editar una orden ya recibida")
+        return redirect('orden_detalle', orden_id=orden_id)
+
+    proveedores = Proveedor.objects.all()
+    productos = Producto.objects.all()
+
+    if request.method == 'POST':
+        proveedor_id = request.POST.get('proveedor')
+        producto_id = request.POST.get('producto')
+        cantidad = request.POST.get('cantidad')
+        costo_unitario = request.POST.get('costo_unitario')
+
+        if not all([proveedor_id, producto_id, cantidad, costo_unitario]):
+            messages.error(request, "Por favor completa todos los campos")
+            return redirect('orden_editar', orden_id=orden_id)
+
+        oc.proveedor = Proveedor.objects.get(id=proveedor_id)
+        oc.producto = Producto.objects.get(id=producto_id)
+        oc.cantidad = int(cantidad)
+        oc.costo_unitario = float(costo_unitario)
+        oc.subtotal = oc.cantidad * oc.costo_unitario
+        oc.save()
+
+        messages.success(request, f"Orden OC-{oc.id} actualizada")
+        return redirect('orden_detalle', orden_id=orden_id)
+
+    return render(request, 'inventario/orden_form.html', {
+        'proveedores': proveedores,
+        'productos': productos,
+        'editar': True,
+        'orden': oc
+    })
+
+
+@login_required(login_url='login')
+def orden_cancelar(request, orden_id):
+    oc = get_object_or_404(OrdenCompra, id=orden_id)
+    if oc.estado == 'RECIBIDA':
+        messages.warning(request, "No se puede cancelar una orden ya recibida")
+        return redirect('orden_lista')
+
+    if request.method == 'POST':
+        oc.estado = 'CANCELADA'
+        oc.save()
+        messages.success(request, f"Orden OC-{oc.id} cancelada")
+        return redirect('orden_lista')
+
+    return render(request, 'inventario/orden_confirm_cancel.html', {'orden': oc})
+
+# ===========================
+# ALERTAS DEL SISTEMA
+# ===========================
+
+@login_required(login_url='login')
+def alertas_lista(request):
+    alertas = AlertaInventario.objects.all().order_by('-fecha')
+    return render(request, 'inventario/alertas.html', {'alertas': alertas})
+
+
+@login_required(login_url='login')
+def alerta_marcar_leida(request, alerta_id):
+    alerta = get_object_or_404(AlertaInventario, id=alerta_id)
+    alerta.leida = True
+    alerta.save()
+    return redirect('alertas_lista')

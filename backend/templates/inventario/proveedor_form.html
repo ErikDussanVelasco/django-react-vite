@@ -1,0 +1,65 @@
+{% extends "inventario/base.html" %}
+{% block title %}{% if editar %}Editar Proveedor{% else %}Nuevo Proveedor{% endif %}{% endblock %}
+{% block page_title %}{% if editar %}Editar Proveedor{% else %}Registrar Proveedor{% endif %}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto bg-white rounded-xl shadow p-8">
+    <form method="POST" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- Nombre -->
+        <div>
+            <label for="nombre" class="font-semibold">Nombre</label>
+            <input id="nombre" name="nombre" type="text"
+                   placeholder="Nombre del proveedor"
+                   title="Nombre del proveedor"
+                   value="{{ proveedor.nombre|default:'' }}"
+                   class="w-full border px-4 py-3 rounded-lg" required>
+        </div>
+
+        <!-- Teléfono -->
+        <div>
+            <label for="telefono" class="font-semibold">Teléfono</label>
+            <input id="telefono" name="telefono" type="text"
+                   placeholder="Ej: 3001234567"
+                   title="Teléfono del proveedor"
+                   value="{{ proveedor.telefono|default:'' }}"
+                   class="w-full border px-4 py-3 rounded-lg" required>
+        </div>
+
+        <!-- Correo -->
+        <div>
+            <label for="correo" class="font-semibold">Correo electrónico</label>
+            <input id="correo" name="correo" type="email"
+                   placeholder="proveedor@empresa.com"
+                   title="Correo electrónico del proveedor"
+                   value="{{ proveedor.correo|default:'' }}"
+                   class="w-full border px-4 py-3 rounded-lg" required>
+        </div>
+
+        <!-- Dirección -->
+        <div>
+            <label for="direccion" class="font-semibold">Dirección</label>
+            <input id="direccion" name="direccion" type="text"
+                   placeholder="Dirección del proveedor"
+                   title="Dirección del proveedor"
+                   value="{{ proveedor.direccion|default:'' }}"
+                   class="w-full border px-4 py-3 rounded-lg" required>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex gap-4 pt-6">
+            <button type="submit"
+                class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold">
+                {% if editar %}Actualizar{% else %}Guardar{% endif %}
+            </button>
+
+            <a href="{% url 'proveedor_lista' %}"
+                class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 rounded-lg text-center">
+                Cancelar
+            </a>
+        </div>
+
+    </form>
+</div>
+{% endblock %}

@@ -48,9 +48,19 @@
                 <a href="#" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-[#1b3e63] transition">
                     <span class="text-xl">💰</span><span>Ventas</span>
                 </a>
-                <a href="#" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-[#1b3e63] transition">
-                    <span class="text-xl">📨</span><span>Proveedores</span>
-                </a>
+                <a href="{% url 'proveedor_lista' %}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-[#1b3e63] transition">
+               <span class="text-xl">📨</span><span>Proveedores</span>
+               </a>
+
+              <a href="{% url 'orden_lista' %}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-[#1b3e63] transition">
+              <span class="text-xl">🧾</span><span>Órdenes de Compra</span>
+            </a>
+
+            <a href="{% url 'alertas_lista' %}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-[#1b3e63] transition">
+            <span class="text-xl">🔔</span><span>Alertas</span>
+            </a>
+
+                
                 <a href="#" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-[#1b3e63] transition">
                     <span class="text-xl">📊</span><span>Reportes</span>
                 </a>
