@@ -10,7 +10,7 @@ from .views import (
     proveedor_editar, proveedor_eliminar, proveedor_detalle,
     orden_detalle, orden_editar, orden_cancelar,
     # Vistas de ventas
-    venta_lista, venta_crear, venta_detalle
+    venta_lista, venta_crear, venta_detalle, venta_factura_pdf  # <-- AGREGADO venta_factura_pdf
 )
 
 router = DefaultRouter()
@@ -53,6 +53,8 @@ urlpatterns = [
     path('ventas/', venta_lista, name='venta_lista'),
     path('ventas/crear/', venta_crear, name='venta_crear'),
     path('ventas/<int:venta_id>/', venta_detalle, name='venta_detalle'),
+    # Nueva URL para factura PDF
+    path('ventas/<int:venta_id>/factura/', venta_factura_pdf, name='venta_factura_pdf'),  # <-- AGREGADO
 
     # API REST
     path('api/', include(router.urls)),

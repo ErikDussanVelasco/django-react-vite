@@ -15,7 +15,7 @@ class Proveedor(models.Model):
 
 
 # ===========================
-# PRODUCTO (TU MISMO MODELO)
+# PRODUCTO
 # ===========================
 class Producto(models.Model):
     codigo = models.IntegerField(unique=True)
@@ -52,7 +52,6 @@ class OrdenCompra(models.Model):
     def __str__(self):
         return f"OC-{self.id} | {self.producto.nombre} x {self.cantidad}"
 
-    # CUANDO SE MARCA COMO RECIBIDA, AUMENTA STOCK
     def recibir(self):
         if self.estado != 'RECIBIDA':
             self.producto.stock += self.cantidad
@@ -61,7 +60,6 @@ class OrdenCompra(models.Model):
             self.fecha_recepcion = timezone.now()
             self.save()
 
-            # CREAR ALERTA
             AlertaInventario.objects.create(
                 tipo="COMPRA",
                 titulo=f"Orden de compra OC-{self.id} recibida",
@@ -72,7 +70,7 @@ class OrdenCompra(models.Model):
 
 
 # ===========================
-# MOVIMIENTOS DE INVENTARIO (TU MODELO ORIGINAL)
+# MOVIMIENTOS DE INVENTARIO
 # ===========================
 class Inventario(models.Model):
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name="movimientos")
@@ -102,17 +100,38 @@ class Inventario(models.Model):
 
 
 # ===========================
-# VENTA Y DETALLE DE VENTA (NUEVOS MODELOS)
+# VENTA
 # ===========================
 class Venta(models.Model):
+    METODOS_PAGO = [
+        ("EFECTIVO", "Efectivo"),
+        ("TARJETA", "Tarjeta"),
+        ("TRANSFERENCIA", "Transferencia"),
+    ]
+
     fecha = models.DateTimeField(auto_now_add=True)
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    # Métodos de pago
+    metodo_pago = models.CharField(max_length=20, choices=METODOS_PAGO, default="EFECTIVO")
+    monto_recibido = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    cambio = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    # Descuentos e impuestos (Fase 2)
+    descuento_general = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    iva_porcentaje = models.DecimalField(max_digits=5, decimal_places=2, default=19.0)
+    iva_total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_final = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
     usuario = models.ForeignKey('accounts.User', null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
-        return f"Venta #{self.id} - ${self.total}"
+        return f"Venta #{self.id} - ${self.total_final}"
 
 
+# ===========================
+# DETALLE DE VENTA
+# ===========================
 class DetalleVenta(models.Model):
     venta = models.ForeignKey(Venta, related_name='detalles', on_delete=models.CASCADE)
     producto = models.ForeignKey(Producto, on_delete=models.PROTECT)
@@ -136,7 +155,6 @@ class AlertaInventario(models.Model):
     tipo = models.CharField(max_length=20, choices=TIPOS)
     titulo = models.CharField(max_length=200)
     mensaje = models.TextField()
-
     fecha = models.DateTimeField(default=timezone.now)
     leida = models.BooleanField(default=False)
 
