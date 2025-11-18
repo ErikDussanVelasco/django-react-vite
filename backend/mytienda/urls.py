@@ -13,4 +13,7 @@ urlpatterns = [
     
     # Rutas del inventario
     path('inventario/', include('inventario.urls')),
+    
+    #Rutas de ventas
+    path('ventas/', include('ventas.urls')) ,
 ]

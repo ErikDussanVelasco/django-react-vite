@@ -21,7 +21,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'inventario',
-    'accounts'
+    'accounts',
+    'ventas'
 ]
 
 MIDDLEWARE = [

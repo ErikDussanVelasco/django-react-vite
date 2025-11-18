@@ -9,8 +9,9 @@ from .views import (
     # Nuevas vistas agregadas
     proveedor_editar, proveedor_eliminar, proveedor_detalle,
     orden_detalle, orden_editar, orden_cancelar,
-    # Vistas de ventas
-    venta_lista, venta_crear, venta_detalle, venta_factura_pdf  # <-- AGREGADO venta_factura_pdf
+)
+from ventas.views import (
+    venta_lista, venta_crear, venta_detalle, venta_factura_pdf
 )
 
 router = DefaultRouter()
