@@ -60,12 +60,15 @@
 </div>
 
 <!-- BOTONES DE ACCIÓN -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
     <a href="{% url 'producto_crear' %}" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg transition flex items-center justify-center">
         <span class="mr-2">➕</span> Nuevo Producto
     </a>
     <a href="{% url 'inventario_movimiento' %}" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition flex items-center justify-center">
         <span class="mr-2">↔️</span> Registrar Movimiento
+    </a>
+    <a href="{% url 'compra_lista' %}" class="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition flex items-center justify-center">
+        <span class="mr-2">🛒</span> Compras
     </a>
     <a href="{% url 'producto_lista' %}" class="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 px-6 rounded-lg transition flex items-center justify-center">
         <span class="mr-2">📋</span> Ver Inventario

@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from rest_framework import viewsets
 from decimal import Decimal
-from django.http import HttpResponse
+from django.http import JsonResponse
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 
@@ -83,7 +83,10 @@ def producto_crear(request):
             return render(request, 'inventario/producto_form.html')
 
     return render(request, 'inventario/producto_form.html')
-
+def verificar_codigo_producto(request):
+    codigo = request.GET.get('codigo', '').strip()
+    existe = Producto.objects.filter(codigo=codigo).exists()
+    return JsonResponse({'existe': existe})
 
 # ==================== MOVIMIENTOS ====================
 

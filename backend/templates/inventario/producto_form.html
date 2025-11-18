@@ -27,6 +27,10 @@
                     placeholder="Ej: 12345"
                     required
                 >
+                
+                <!-- mensaje dinámico -->
+                <p id="codigo-msg" class="text-xs mt-1 font-semibold"></p>
+
                 <p class="text-gray-500 text-xs mt-1">El código debe ser único</p>
             </div>
 
@@ -115,4 +119,31 @@
         </ul>
     </div>
 </div>
+
+<!-- Script de validación en tiempo real -->
+<script>
+document.getElementById("codigo").addEventListener("keyup", function () {
+    const codigo = this.value;
+    const msg = document.getElementById("codigo-msg");
+
+    if (codigo.length === 0) {
+        msg.textContent = "";
+        msg.className = "text-xs mt-1 font-semibold";
+        return;
+    }
+
+    fetch(`/inventario/productos/verificar-codigo/?codigo=` + codigo)
+        .then(res => res.json())
+        .then(data => {
+            if (data.existe) {
+                msg.textContent = "⚠️ Este código ya está registrado";
+                msg.className = "text-xs mt-1 font-semibold text-red-600";
+            } else {
+                msg.textContent = "✔️ Código disponible";
+                msg.className = "text-xs mt-1 font-semibold text-green-600";
+            }
+        });
+});
+</script>
+
 {% endblock %}
