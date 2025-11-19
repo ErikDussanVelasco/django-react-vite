@@ -54,6 +54,13 @@ def inventario_dashboard(request):
         'stock_total': stock_total,
         'bajo_stock': bajo_stock,
     }
+    # Filtrar elementos del menú para el dashboard: ocultar Órdenes y Alertas
+    try:
+        filtered = [ (n,u) for (n,u) in request.menu_items if ('orden' not in n.lower() and 'alert' not in n.lower()) ]
+    except Exception:
+        filtered = None
+    if filtered is not None:
+        context['menu_items'] = filtered
     return render(request, 'inventario/dashboard.html', context)
 
 

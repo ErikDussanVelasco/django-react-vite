@@ -41,35 +41,37 @@
         <aside class="w-64 bg-[#0e2a47] border-r h-screen p-4 shadow-lg">
 
             <nav class="flex flex-col space-y-2">
-                {% if request.menu_items %}
-                    {% for name, url in request.menu_items %}
-                        {% with name|lower as item %}
-                            <a href="{{ url }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-[#1b3e63] transition text-white">
-                                {% if "home" in item %}
-                                    <span class="text-xl">🏠</span>
-                                {% elif "inventario" in item %}
-                                    <span class="text-xl">📦</span>
-                                {% elif "usuarios" in item %}
-                                    <span class="text-xl">👤</span>
-                                {% elif "ventas" in item %}
-                                    <span class="text-xl">💰</span>
-                                {% elif "compras" in item %}
-                                    <span class="text-xl">🛒</span>
-                                {% elif "proveedores" in item %}
-                                    <span class="text-xl">📨</span>
-                                {% elif "reportes" in item %}
-                                    <span class="text-xl">📊</span>
-                                {% else %}
-                                    <span class="text-xl">➡️</span>
-                                {% endif %}
+                {% with items=menu_items|default:request.menu_items %}
+                    {% if items %}
+                        {% for name, url in items %}
+                            {% with name|lower as item %}
+                                <a href="{{ url }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-[#1b3e63] transition text-white">
+                                    {% if "home" in item %}
+                                        <span class="text-xl">🏠</span>
+                                    {% elif "inventario" in item %}
+                                        <span class="text-xl">📦</span>
+                                    {% elif "usuarios" in item %}
+                                        <span class="text-xl">👤</span>
+                                    {% elif "ventas" in item %}
+                                        <span class="text-xl">💰</span>
+                                    {% elif "compras" in item %}
+                                        <span class="text-xl">🛒</span>
+                                    {% elif "proveedores" in item %}
+                                        <span class="text-xl">📨</span>
+                                    {% elif "reportes" in item %}
+                                        <span class="text-xl">📊</span>
+                                    {% else %}
+                                        <span class="text-xl">➡️</span>
+                                    {% endif %}
 
-                                <span>{{ name }}</span>
-                            </a>
-                        {% endwith %}
-                    {% endfor %}
-                {% else %}
-                    <div class="px-4 py-2 text-sm text-gray-300">No menu configured</div>
-                {% endif %}
+                                    <span>{{ name }}</span>
+                                </a>
+                            {% endwith %}
+                        {% endfor %}
+                    {% else %}
+                        <div class="px-4 py-2 text-sm text-gray-300">No menu configured</div>
+                    {% endif %}
+                {% endwith %}
             </nav>
             </aside>
 

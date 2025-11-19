@@ -15,8 +15,6 @@ class RoleMenuMiddleware:
                     ("Ventas", "/ventas/"),
                     ("Compras", "/compras/"),
                     ("Proveedores", "/inventario/proveedores/"),
-                    ("Órdenes de Compra", "/inventario/ordenes/"),
-                    ("Alertas", "/inventario/alertas/"),
                     ("Reportes", "/reportes/"),
                 ]
             else:
@@ -26,8 +24,6 @@ class RoleMenuMiddleware:
                     ("Ventas", "/ventas/"),
                     ("Compras", "/compras/"),
                     ("Proveedores", "/inventario/proveedores/"),
-                    ("Órdenes de Compra", "/inventario/ordenes/"),
-                    ("Alertas", "/inventario/alertas/"),
                 ]
 
         return self.get_response(request)
