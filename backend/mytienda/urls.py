@@ -20,4 +20,7 @@ urlpatterns = [
     #ruta compras
     path('compras/', include('compras.urls')),
 
+    #ruta reportes
+    path('reportes/', include('reportes.urls', namespace='reportes')),
+
 ]

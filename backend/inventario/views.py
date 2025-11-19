@@ -31,14 +31,22 @@ class InventarioViewSet(viewsets.ModelViewSet):
 
 @login_required(login_url='login')
 def inventario_dashboard(request):
+    """Dashboard simple del home - solo datos básicos"""
+    from django.db.models import Sum, Count
+    
     productos = Producto.objects.all()
-    movimientos = Inventario.objects.all().order_by('-id')
+    movimientos = Inventario.objects.all().order_by('-fecha')[:10]
+    
+    total_productos = productos.count()
+    stock_total = productos.aggregate(total=Sum('stock'))['total'] or 0
+    bajo_stock = productos.filter(stock__lte=5).count()
 
     context = {
         'productos': productos,
         'movimientos': movimientos,
-        'total_productos': productos.count(),
-        'stock_total': sum([p.stock for p in productos])
+        'total_productos': total_productos,
+        'stock_total': stock_total,
+        'bajo_stock': bajo_stock,
     }
     return render(request, 'inventario/dashboard.html', context)
 

@@ -77,6 +77,7 @@ class Inventario(models.Model):
     tipo = models.CharField(max_length=10, choices=[('ENTRADA', 'Entrada'), ('SALIDA', 'Salida')])
     cantidad = models.IntegerField()
     numero_referencia = models.CharField(max_length=20, unique=True, blank=True, null=True)
+    fecha = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.tipo} - {self.producto.nombre} ({self.cantidad})"
