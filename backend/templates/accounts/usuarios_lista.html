@@ -1,29 +1,44 @@
-{% extends "base.html" %}
+{% extends "accounts/base.html" %}
+{% block page_title %}Usuarios del Sistema{% endblock %}
+
 {% block content %}
 
-<h2 class="text-2xl font-bold mb-4">Usuarios del Sistema</h2>
+<div class="bg-white p-6 rounded-xl shadow max-w-4xl mx-auto">
 
-<a href="{% url 'usuario_crear' %}" class="bg-green-600 text-white px-4 py-2 rounded">➕ Nuevo Usuario</a>
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold">Usuarios del Sistema</h2>
+        <a href="{% url 'usuario_crear' %}"
+           class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+           ➕ Nuevo Usuario
+        </a>
+    </div>
 
-<table class="w-full mt-4">
-    <tr class="bg-gray-200">
-        <th class="px-4 py-2">Usuario</th>
-        <th class="px-4 py-2">Nombre</th>
-        <th class="px-4 py-2">Rol</th>
-        <th class="px-4 py-2">Acciones</th>
-    </tr>
+    <table class="w-full border rounded">
+        <thead class="bg-gray-100 border-b">
+            <tr>
+                <th class="px-4 py-2 text-left">Usuario</th>
+                <th class="px-4 py-2 text-left">Nombre</th>
+                <th class="px-4 py-2 text-left">Rol</th>
+                <th class="px-4 py-2 text-left">Acciones</th>
+            </tr>
+        </thead>
 
-    {% for u in usuarios %}
-    <tr class="border-b">
-        <td class="px-4 py-2">{{ u.username }}</td>
-        <td class="px-4 py-2">{{ u.first_name }} {{ u.last_name }}</td>
-        <td class="px-4 py-2">{{ u.rol }}</td>
-        <td class="px-4 py-2">
-            <a href="{% url 'usuario_editar' u.id %}" class="text-blue-600">✏ Editar</a> |
-            <a href="{% url 'usuario_eliminar' u.id %}" class="text-red-600">🗑 Eliminar</a>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+        <tbody>
+            {% for u in usuarios %}
+            <tr class="border-b hover:bg-gray-50">
+                <td class="px-4 py-2">{{ u.username }}</td>
+                <td class="px-4 py-2">{{ u.first_name }} {{ u.last_name }}</td>
+                <td class="px-4 py-2">{{ u.rol }}</td>
+                <td class="px-4 py-2 space-x-2">
+                    <a href="{% url 'usuario_editar' u.id %}" class="text-blue-600">✏ Editar</a>
+                    <a href="{% url 'usuario_eliminar' u.id %}" class="text-red-600">🗑 Eliminar</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+
+</div>
 
 {% endblock %}
