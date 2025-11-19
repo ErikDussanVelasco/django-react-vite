@@ -7,7 +7,8 @@ from .views import (
     orden_lista, orden_crear, orden_recibir,
     alertas_lista, alerta_marcar_leida,
     proveedor_editar, proveedor_eliminar, proveedor_detalle,
-    orden_detalle, orden_editar, orden_cancelar,verificar_codigo_producto
+    orden_detalle, orden_editar, orden_cancelar,verificar_codigo_producto,
+    verificar_correo_proveedor
 )
 from ventas.views import (
     venta_lista, venta_crear, venta_detalle, venta_factura_pdf
@@ -24,7 +25,7 @@ urlpatterns = [
     # Productos
     path('productos/', producto_lista, name='producto_lista'),
     path('productos/crear/', producto_crear, name='producto_crear'),
-    
+    path('productos/verificar-codigo/', verificar_codigo_producto, name='verificar_codigo_producto'),
 
     # Movimientos
     path('movimientos/', inventario_movimiento, name='inventario_movimiento'),
@@ -32,7 +33,9 @@ urlpatterns = [
     # Proveedores
     path('proveedores/', proveedor_lista, name='proveedor_lista'),
     path('proveedores/crear/', proveedor_crear, name='proveedor_crear'),
-    path('proveedores/verificar-nombre/', verificar_codigo_producto, name='verificar_codigo_producto'),
+   
+    path('proveedores/verificar-correo/', verificar_correo_proveedor, name='verificar_correo_proveedor'),
+   
     # Proveedores: editar, eliminar, detalle
     path('proveedores/editar/<int:proveedor_id>/', proveedor_editar, name='proveedor_editar'),
     path('proveedores/eliminar/<int:proveedor_id>/', proveedor_eliminar, name='proveedor_eliminar'),

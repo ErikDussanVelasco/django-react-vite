@@ -144,48 +144,79 @@ def proveedor_lista(request):
 @login_required(login_url='login')
 def proveedor_crear(request):
     if request.method == 'POST':
-        nombre = request.POST.get('nombre')
-        telefono = request.POST.get('telefono')
-        direccion = request.POST.get('direccion')
-        correo = request.POST.get('correo')
+        nombre = request.POST.get('nombre', '').strip()
+        telefono = request.POST.get('telefono', '').strip()
+        direccion = request.POST.get('direccion', '').strip()
+        correo = request.POST.get('correo', '').strip().lower()
 
         if not all([nombre, telefono, direccion, correo]):
             messages.error(request, "Todos los campos son obligatorios")
-            return redirect('proveedor_crear')
+            return render(request, 'inventario/proveedor_form.html', {
+                'nombre': nombre,
+                'telefono': telefono,
+                'direccion': direccion,
+                'correo': correo
+            })
 
-        Proveedor.objects.create(
-            nombre=nombre,
-            telefono=telefono,
-            direccion=direccion,
-            correo=correo
-        )
-        messages.success(request, f"Proveedor '{nombre}' creado correctamente")
-        return redirect('proveedor_lista')
+        # Validar correo único (case-insensitive)
+        if Proveedor.objects.filter(correo__iexact=correo).exists():
+            messages.error(request, f"El correo '{correo}' ya está registrado con otro proveedor")
+            return render(request, 'inventario/proveedor_form.html', {
+                'nombre': nombre,
+                'telefono': telefono,
+                'direccion': direccion,
+                'correo': correo
+            })
+
+        try:
+            Proveedor.objects.create(
+                nombre=nombre,
+                telefono=telefono,
+                direccion=direccion,
+                correo=correo
+            )
+            messages.success(request, f"Proveedor '{nombre}' creado correctamente")
+            return redirect('proveedor_lista')
+        except Exception as e:
+            messages.error(request, f"Error al crear el proveedor: {str(e)}")
+            return render(request, 'inventario/proveedor_form.html')
 
     return render(request, 'inventario/proveedor_form.html')
-
+def verificar_correo_proveedor(request):
+    correo = request.GET.get('correo', '').strip().lower()
+    existe = Proveedor.objects.filter(correo__iexact=correo).exists()
+    return JsonResponse({'existe': existe})
 
 @login_required(login_url='login')
 def proveedor_editar(request, proveedor_id):
     prov = get_object_or_404(Proveedor, id=proveedor_id)
     if request.method == 'POST':
-        nombre = request.POST.get('nombre')
-        telefono = request.POST.get('telefono')
-        direccion = request.POST.get('direccion')
-        correo = request.POST.get('correo')
+        nombre = request.POST.get('nombre', '').strip()
+        telefono = request.POST.get('telefono', '').strip()
+        direccion = request.POST.get('direccion', '').strip()
+        correo = request.POST.get('correo', '').strip().lower()
 
         if not all([nombre, telefono, direccion, correo]):
             messages.error(request, "Todos los campos son obligatorios")
-            return redirect('proveedor_editar', proveedor_id=proveedor_id)
+            return render(request, 'inventario/proveedor_form.html', {'proveedor': prov, 'editar': True})
 
-        prov.nombre = nombre
-        prov.telefono = telefono
-        prov.direccion = direccion
-        prov.correo = correo
-        prov.save()
+        # Validar correo único (pero permite el mismo correo del proveedor actual)
+        if correo != prov.correo.lower():
+            if Proveedor.objects.filter(correo__iexact=correo).exists():
+                messages.error(request, f"El correo '{correo}' ya está registrado con otro proveedor")
+                return render(request, 'inventario/proveedor_form.html', {'proveedor': prov, 'editar': True})
 
-        messages.success(request, f"Proveedor '{prov.nombre}' actualizado")
-        return redirect('proveedor_lista')
+        try:
+            prov.nombre = nombre
+            prov.telefono = telefono
+            prov.direccion = direccion
+            prov.correo = correo
+            prov.save()
+            messages.success(request, f"Proveedor '{prov.nombre}' actualizado correctamente")
+            return redirect('proveedor_lista')
+        except Exception as e:
+            messages.error(request, f"Error al actualizar el proveedor: {str(e)}")
+            return render(request, 'inventario/proveedor_form.html', {'proveedor': prov, 'editar': True})
 
     return render(request, 'inventario/proveedor_form.html', {'proveedor': prov, 'editar': True})
 

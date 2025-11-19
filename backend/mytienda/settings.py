@@ -84,7 +84,8 @@ AUTH_USER_MODEL = 'accounts.User'
 
 
 AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
+    'accounts.backends.EmailBackend',  # Backend personalizado para autenticar con email
+    'django.contrib.auth.backends.ModelBackend',  # Backend por defecto
 ]
 
 

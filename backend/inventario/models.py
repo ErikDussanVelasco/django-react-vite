@@ -8,7 +8,7 @@ class Proveedor(models.Model):
     nombre = models.CharField(max_length=100)
     telefono = models.CharField(max_length=20)
     direccion = models.CharField(max_length=200)
-    correo = models.EmailField()
+    correo = models.EmailField(unique=True)#para la validacion de correo unico
 
     def __str__(self):
         return self.nombre

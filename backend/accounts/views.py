@@ -24,7 +24,7 @@ class RegisterTemplateView(View):
         return render(request, 'accounts/register.html')
     
     def post(self, request):
-        email = request.POST.get('email', '').strip()
+        email = request.POST.get('email', '').strip().lower()
         username = request.POST.get('username', '').strip()
         password = request.POST.get('password', '').strip()
         password_confirm = request.POST.get('password_confirm', '').strip()
@@ -36,20 +36,30 @@ class RegisterTemplateView(View):
         
         if password != password_confirm:
             messages.error(request, 'Las contraseñas no coinciden')
-            return render(request, 'accounts/register.html')
+            return render(request, 'accounts/register.html', {
+                'email': email,
+                'username': username
+            })
         
         if len(password) < 6:
             messages.error(request, 'La contraseña debe tener al menos 6 caracteres')
-            return render(request, 'accounts/register.html')
+            return render(request, 'accounts/register.html', {
+                'email': email,
+                'username': username
+            })
         
         # Verificar si el usuario ya existe
-        if User.objects.filter(email=email).exists():
+        if User.objects.filter(email__iexact=email).exists():
             messages.error(request, 'El correo ya está registrado')
-            return render(request, 'accounts/register.html')
+            return render(request, 'accounts/register.html', {
+                'username': username
+            })
         
-        if User.objects.filter(username=username).exists():
+        if User.objects.filter(username__iexact=username).exists():
             messages.error(request, 'El usuario ya está registrado')
-            return render(request, 'accounts/register.html')
+            return render(request, 'accounts/register.html', {
+                'email': email
+            })
         
         # Crear usuario
         try:
@@ -58,12 +68,15 @@ class RegisterTemplateView(View):
                 username=username,
                 password=password
             )
-            login(request, user)
-            messages.success(request, f'¡Bienvenido {username}!')
-            return redirect('inventario_dashboard')
+            # NO autologueamos, dejamos que el usuario haga login manualmente
+            messages.success(request, f'¡Cuenta creada exitosamente! Por favor inicia sesión con tus credenciales.')
+            return redirect('login')
         except Exception as e:
             messages.error(request, f'Error al registrar: {str(e)}')
-            return render(request, 'accounts/register.html')
+            return render(request, 'accounts/register.html', {
+                'email': email,
+                'username': username
+            })
 
 
 class LoginTemplateView(View):
@@ -74,27 +87,25 @@ class LoginTemplateView(View):
         return render(request, 'accounts/login.html')
     
     def post(self, request):
-        email = request.POST.get('email', '').strip()
+        email = request.POST.get('email', '').strip().lower()
         password = request.POST.get('password', '').strip()
         
         if not email or not password:
             messages.error(request, 'Por favor completa todos los campos')
             return render(request, 'accounts/login.html')
         
-        # Autenticar usando el correo
-        try:
-            user = User.objects.get(email=email)
-            # Verificar la contraseña
-            if user.check_password(password):
-                login(request, user)
-                messages.success(request, f'¡Bienvenido de vuelta {user.username}!')
-                return redirect('inventario_dashboard')
-            else:
-                messages.error(request, 'Contraseña incorrecta')
-                return render(request, 'accounts/login.html')
-        except User.DoesNotExist:
-            messages.error(request, 'El correo no está registrado')
-            return render(request, 'accounts/login.html')
+        # Autenticar usando el backend personalizado
+        user = authenticate(request, email=email, password=password)
+        
+        if user is not None:
+            login(request, user)
+            messages.success(request, f'¡Bienvenido de vuelta {user.username}!')
+            return redirect('inventario_dashboard')
+        else:
+            messages.error(request, 'Correo o contraseña incorrectos')
+            return render(request, 'accounts/login.html', {
+                'email': email
+            })
 
 
 class LogoutTemplateView(View):

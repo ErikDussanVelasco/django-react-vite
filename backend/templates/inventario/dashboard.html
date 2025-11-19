@@ -1,6 +1,6 @@
 {% extends 'inventario/base.html' %}
-{% block title %}Dashboard - Stock Master{% endblock %}
-{% block page_title %}Overview{% endblock %}
+{% block title %}Home - Stock Master{% endblock %}
+{% block page_title %}Home{% endblock %}
 
 {% block content %}
 
@@ -30,7 +30,7 @@
             <span class="text-4xl">📊</span>
         </div>
     </div>
-
+    
     <!-- Movimientos -->
     <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
         <div class="flex justify-between items-start">
@@ -60,12 +60,9 @@
 </div>
 
 <!-- BOTONES DE ACCIÓN -->
-<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
     <a href="{% url 'producto_crear' %}" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg transition flex items-center justify-center">
         <span class="mr-2">➕</span> Nuevo Producto
-    </a>
-    <a href="{% url 'inventario_movimiento' %}" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition flex items-center justify-center">
-        <span class="mr-2">↔️</span> Registrar Movimiento
     </a>
     <a href="{% url 'compra_lista' %}" class="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition flex items-center justify-center">
         <span class="mr-2">🛒</span> Compras
@@ -75,14 +72,14 @@
     </a>
 </div>
 
-<!-- TABLA DE MOVIMIENTOS RECIENTES -->
+<!-- TABLA DE MOVIMIENTOS RECIENTES 
 <div class="bg-white rounded-xl shadow overflow-hidden">
     <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
         <h2 class="text-xl font-bold text-gray-800 flex items-center">
             <span class="mr-2">📝</span>Movimientos Recientes
         </h2>
     </div>
-
+-->
     {% if movimientos %}
     <div class="overflow-x-auto">
         <table class="w-full">
