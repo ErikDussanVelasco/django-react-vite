@@ -1,0 +1,120 @@
+{% extends 'inventario/base.html' %}
+{% block title %}Home - Mi Tienda{% endblock %}
+{% block page_title %}Home{% endblock %}
+
+{% block content %}
+
+<!-- ============================= -->
+<!-- TARJETAS DE ESTADÍSTICAS -->
+<!-- ============================= -->
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+
+    <!-- Total Productos -->
+    <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition transform hover:-translate-y-1">
+        <p class="text-gray-500 text-sm font-medium flex items-center">
+            📦 Total Productos
+        </p>
+        <h3 class="text-4xl font-extrabold text-gray-800 mt-3">{{ total_productos }}</h3>
+        <p class="text-gray-600 text-sm mt-2">productos disponibles</p>
+    </div>
+
+    <!-- Stock Total -->
+    <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition transform hover:-translate-y-1">
+        <p class="text-gray-500 text-sm font-medium flex items-center">📊 Stock Total</p>
+        <h3 class="text-4xl font-extrabold text-blue-600 mt-3">{{ stock_total }}</h3>
+        <p class="text-blue-600 text-sm mt-2">unidades en almacén</p>
+    </div>
+
+    <!-- Productos Bajo Stock -->
+    <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition transform hover:-translate-y-1">
+        <p class="text-gray-500 text-sm font-medium flex items-center">⚠️ Bajo Stock</p>
+        <h3 class="text-4xl font-extrabold text-orange-600 mt-3">{{ bajo_stock }}</h3>
+        <p class="text-orange-600 text-sm mt-2">productos por reponer</p>
+    </div>
+
+</div>
+
+<!-- ============================= -->
+<!-- ACCIONES RÁPIDAS -->
+<!-- ============================= -->
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+
+    <!-- Nuevo Producto -->
+    <a href="{% url 'producto_crear' %}" class="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl shadow text-white hover:shadow-xl transition transform hover:-translate-y-1 cursor-pointer">
+        <p class="text-sm opacity-90">➕ Rápido</p>
+        <h3 class="text-xl font-bold mt-3">Crear Producto</h3>
+        <p class="text-sm mt-2 opacity-75">Agregar nuevo producto al inventario</p>
+    </a>
+
+    <!-- Nueva Compra -->
+    <a href="{% url 'compra_crear' %}" class="bg-gradient-to-br from-green-500 to-green-600 p-6 rounded-xl shadow text-white hover:shadow-xl transition transform hover:-translate-y-1 cursor-pointer">
+        <p class="text-sm opacity-90">🛒 Compras</p>
+        <h3 class="text-xl font-bold mt-3">Nueva Compra</h3>
+        <p class="text-sm mt-2 opacity-75">Registrar compra de productos</p>
+    </a>
+
+    <!-- Nueva Venta -->
+    <a href="{% url 'venta_crear' %}" class="bg-gradient-to-br from-purple-500 to-purple-600 p-6 rounded-xl shadow text-white hover:shadow-xl transition transform hover:-translate-y-1 cursor-pointer">
+        <p class="text-sm opacity-90">💰 Ventas</p>
+        <h3 class="text-xl font-bold mt-3">Nueva Venta</h3>
+        <p class="text-sm mt-2 opacity-75">Registrar venta a cliente</p>
+    </a>
+
+</div>
+
+<!-- ============================= -->
+<!-- TABLA DE MOVIMIENTOS -->
+<!-- ============================= -->
+
+<div class="bg-white rounded-xl shadow overflow-hidden">
+    <div class="px-6 py-4 bg-gray-50 border-b">
+        <h2 class="text-xl font-bold text-gray-800">📝 Últimos Movimientos</h2>
+    </div>
+
+    {% if movimientos %}
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead>
+                <tr class="bg-gray-100 border-b">
+                    <th class="px-6 py-3 text-left text-sm font-semibold">Producto</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold">Tipo</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold">Cantidad</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold">Referencia</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold">Fecha</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for mov in movimientos|slice:":10" %}
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="px-6 py-3">{{ mov.producto.nombre }}</td>
+                    <td class="px-6 py-3">
+                        {% if mov.tipo == 'ENTRADA' %}
+                        <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">Entrada</span>
+                        {% else %}
+                        <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs">Salida</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-3 font-semibold">
+                        {% if mov.tipo == 'ENTRADA' %}
+                            <span class="text-green-600">+{{ mov.cantidad }}</span>
+                        {% else %}
+                            <span class="text-red-600">-{{ mov.cantidad }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-3">{{ mov.numero_referencia|default:'—' }}</td>
+                    <td class="px-6 py-3 text-gray-500 text-sm">{{ mov.fecha|date:"d/m/Y H:i" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% else %}
+    <div class="p-6 text-center text-gray-500">📭 No hay movimientos registrados</div>
+    {% endif %}
+</div>
+
+{% endblock %}
