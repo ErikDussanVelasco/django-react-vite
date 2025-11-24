@@ -18,7 +18,14 @@ class RoleMenuMiddleware:
                     ("Proveedores", "/inventario/proveedores/"),
                     ("Reportes", "/reportes/"),
                 ]
+            elif request.user.rol == "CAJERO":
+                # Cajero: menú minimalista — acceso a ventas y a sus ventas (mis ventas)
+                request.menu_items = [
+                    ("Ventas", "/ventas/"),
+                    ("Mis Ventas", "/ventas/mis-ventas/"),
+                ]
             else:
+                # Otros roles por defecto: menú reducido similar al administrador pero sin usuarios
                 request.menu_items = [
                     ("Home", "/"),
                     ("Inventario", "/inventario/productos/"),

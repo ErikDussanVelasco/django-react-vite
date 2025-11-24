@@ -7,6 +7,11 @@
 <form method="post" class="bg-white p-6 rounded-xl shadow max-w-3xl mx-auto">
     {% csrf_token %}
 
+    <div class="mb-4">
+        <label class="block font-semibold mb-1">Buscar producto</label>
+        <input id="producto-buscar" type="search" placeholder="Busca por nombre o código" class="w-full p-2 border rounded" autocomplete="off">
+        <div id="producto-sugerencias" class="bg-white border mt-1 rounded max-h-48 overflow-auto hidden"></div>
+    </div>
     <table class="w-full mb-6">
         <thead class="bg-gray-100 border-b">
             <tr>
@@ -18,8 +23,8 @@
         </thead>
         <tbody>
             {% for p in productos %}
-            <tr class="border-b">
-                <td class="px-4 py-2 font-semibold text-gray-800">{{ p.nombre }}</td>
+            <tr class="border-b" data-prod-id="{{ p.id }}">
+                <td class="px-4 py-2 font-semibold text-gray-800">{{ p.nombre }} <span class="text-sm text-gray-500">(Cod: {{ p.codigo }})</span></td>
                 <td class="px-4 py-2 text-green-700 font-medium">${{ p.precio_venta }}</td>
                 <td class="px-4 py-2">{{ p.stock }}</td>
                 <td class="px-4 py-2">
@@ -27,7 +32,7 @@
                            name="prod_{{ p.id }}"
                            min="0"
                            max="{{ p.stock }}"
-                           class="w-24 px-2 py-1 border rounded"
+                           class="w-24 px-2 py-1 border rounded cantidad-venta"
                            placeholder="0">
                 </td>
             </tr>
@@ -80,6 +85,90 @@
 </form>
 
 <script>
+// Helper debounce
+function debounce(fn, wait){
+    let t;
+    return function(...args){
+        clearTimeout(t);
+        t = setTimeout(() => fn.apply(this, args), wait);
+    }
+}
+
+// Autocomplete: buscar productos y mostrar sugerencias
+const buscarInput = document.getElementById('producto-buscar');
+const sugerenciasBox = document.getElementById('producto-sugerencias');
+
+async function buscarProductos(q){
+    if(!q || q.length < 1){
+        sugerenciasBox.classList.add('hidden');
+        sugerenciasBox.innerHTML = '';
+        return;
+    }
+    try{
+        const res = await fetch(`/inventario/api/productos/buscar/?q=${encodeURIComponent(q)}`);
+        if(!res.ok) return;
+        const data = await res.json();
+        renderSugerencias(data);
+    }catch(e){
+        console.error(e);
+    }
+}
+
+function renderSugerencias(items){
+    if(!items.length){
+        sugerenciasBox.classList.add('hidden');
+        sugerenciasBox.innerHTML = '';
+        return;
+    }
+    sugerenciasBox.classList.remove('hidden');
+    sugerenciasBox.innerHTML = items.map(it => `
+        <div class="px-3 py-2 hover:bg-gray-100 cursor-pointer" data-id="${it.id}" data-nombre="${it.nombre}" data-codigo="${it.codigo}" data-precio="${it.precio_venta}" data-stock="${it.stock}">
+            <div class="font-semibold">${it.nombre} <span class="text-sm text-gray-500">(Cod: ${it.codigo})</span></div>
+            <div class="text-sm text-gray-600">Precio: $${it.precio_venta} — Stock: ${it.stock}</div>
+        </div>
+    `).join('');
+}
+
+const debouncedBuscar = debounce((e)=> buscarProductos(e.target.value), 250);
+buscarInput.addEventListener('input', debouncedBuscar);
+
+// Al seleccionar sugerencia, agregar fila al formulario (si no existe)
+sugerenciasBox.addEventListener('click', function(e){
+    const el = e.target.closest('[data-id]');
+    if(!el) return;
+    const id = el.dataset.id;
+    const nombre = el.dataset.nombre;
+    const codigo = el.dataset.codigo;
+    const precio = el.dataset.precio;
+    const stock = parseInt(el.dataset.stock,10);
+
+    // Si ya existe una fila con data-prod-id, enfocar su input
+    if(document.querySelector(`tr[data-prod-id="${id}"]`)){
+        const input = document.querySelector(`tr[data-prod-id="${id}"] input.cantidad-venta`);
+        if(input) input.focus();
+    } else {
+        // crear fila nueva al final de la tabla
+        const tbody = document.querySelector('table tbody');
+        const tr = document.createElement('tr');
+        tr.className = 'border-b';
+        tr.setAttribute('data-prod-id', id);
+        tr.innerHTML = `
+            <td class="px-4 py-2 font-semibold text-gray-800">${nombre} <span class="text-sm text-gray-500">(Cod: ${codigo})</span></td>
+            <td class="px-4 py-2 text-green-700 font-medium">$${precio}</td>
+            <td class="px-4 py-2">${stock}</td>
+            <td class="px-4 py-2">
+                <input type="number" name="prod_${id}" min="0" max="${stock}" value="1" class="w-24 px-2 py-1 border rounded cantidad-venta">
+            </td>
+        `;
+        tbody.appendChild(tr);
+    }
+
+    // limpiar buscador
+    buscarInput.value = '';
+    sugerenciasBox.classList.add('hidden');
+    sugerenciasBox.innerHTML = '';
+});
+
     document.getElementById('metodo_pago').addEventListener('change', function() {
         const pagoEfectivoDiv = document.getElementById('pago_efectivo');
         // Muestra el campo 'Monto recibido' solo si el método de pago es 'EFECTIVO'
