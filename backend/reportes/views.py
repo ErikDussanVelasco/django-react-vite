@@ -141,9 +141,11 @@ def ventas_por_periodo(request):
         fecha_inicio = date.today() - timedelta(days=30)
         fecha_fin = date.today()
 
+    # ✅ OPTIMIZACIÓN: select_related para usuario evita N+1 queries
     # Obtener todas las ventas en el período
     ventas_raw = (
         Venta.objects
+        .select_related('usuario')
         .filter(fecha__date__gte=fecha_inicio, fecha__date__lte=fecha_fin)
         .order_by('fecha')
     )

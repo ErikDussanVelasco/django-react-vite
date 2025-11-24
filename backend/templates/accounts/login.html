@@ -40,6 +40,15 @@
                 Ingresar
             </button>
         </form>
+
+        <!-- Mensaje para nuevos usuarios -->
+        <div class="mt-6 pt-6 border-t border-gray-300 text-center">
+            <p class="text-gray-600 mb-2">¿No tienes cuenta?</p>
+            <a href="{% url 'register' %}" 
+                class="inline-block bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition font-semibold">
+                🚀 Crear una cuenta
+            </a>
+        </div>
     </div>
 </div>
 {% endblock %}

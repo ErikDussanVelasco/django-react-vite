@@ -44,10 +44,19 @@
             </div>
 
             <div class="flex items-center justify-between">
-                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Crear cuenta</button>
-                <a href="{% url 'login' %}" class="text-sm text-gray-600 hover:underline">¿Ya tienes cuenta? Inicia sesión</a>
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 font-semibold">Crear cuenta</button>
+                <a href="{% url 'login' %}" class="text-sm text-blue-600 hover:underline">¿Ya tienes cuenta?</a>
             </div>
         </form>
+
+        <!-- Mensaje alternativo más prominente -->
+        <div class="mt-6 pt-6 border-t border-gray-300 text-center">
+            <p class="text-gray-600 mb-2">¿Ya tienes cuenta?</p>
+            <a href="{% url 'login' %}" 
+                class="inline-block bg-gray-700 text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition font-semibold">
+                🔐 Iniciar sesión
+            </a>
+        </div>
     </div>
 </div>
 

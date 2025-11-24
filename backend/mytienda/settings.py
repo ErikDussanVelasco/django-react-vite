@@ -10,8 +10,8 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = "hittlerfurer3@gmail.com"
-EMAIL_HOST_PASSWORD = "gyhh ivqt fhze abim"
+EMAIL_HOST_USER = "stockmaster255@gmail.com"
+EMAIL_HOST_PASSWORD = "gxckbjvvbleipkyp"
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # ⚙️ Cargar variables desde el .env

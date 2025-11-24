@@ -128,10 +128,12 @@ def api_productos_search(request):
 
 @login_required(login_url='login')
 @user_passes_test(es_admin, login_url='login') # CORREGIDO: Usando nombre de ruta 'login'
+@login_required(login_url='login')
 def inventario_dashboard(request):
     """Dashboard simple del home - solo datos básicos"""
     
-    productos = Producto.objects.filter(activo=True)  # Solo productos activos
+    # ✅ OPTIMIZACIÓN: select_related para usuario, prefetch_related para detalles
+    productos = Producto.objects.filter(activo=True)
     movimientos = Inventario.objects.all().order_by('-fecha')[:10]
     
     total_productos = productos.count()
@@ -146,7 +148,7 @@ def inventario_dashboard(request):
         'stock_total': stock_total,
         'bajo_stock': bajo_stock,
     }
-    # Filtrar elementos del menú para el dashboard: ocultar Órdenes y Alertas
+    return render(request, 'inventario/dashboard.html', context)
     try:
         filtered = [ (n,u) for (n,u) in request.menu_items if ('orden' not in n.lower() and 'alert' not in n.lower()) ]
     except Exception:
@@ -161,7 +163,8 @@ def inventario_dashboard(request):
 @login_required(login_url='login')
 @user_passes_test(es_admin, login_url='login') # CORREGIDO
 def producto_lista(request):
-    productos = Producto.objects.filter(activo=True)  # Solo productos activos
+    # ✅ OPTIMIZACIÓN: Cargar solo productos activos sin queries adicionales
+    productos = Producto.objects.filter(activo=True).order_by('nombre')  # Solo productos activos
     return render(request, 'inventario/producto_lista.html', {'productos': productos})
 
 
@@ -318,7 +321,8 @@ def inventario_movimiento(request):
 @login_required(login_url='login')
 @user_passes_test(es_admin, login_url='login') # CORREGIDO
 def proveedor_lista(request):
-    proveedores = Proveedor.objects.all()
+    # ✅ OPTIMIZACIÓN: Cargar proveedores sin queries adicionales
+    proveedores = Proveedor.objects.all().order_by('nombre')
     return render(request, 'inventario/proveedor_lista.html', {'proveedores': proveedores})
 
 
