@@ -7,7 +7,7 @@ from django.views.generic import RedirectView
 urlpatterns = [
     path('admin/', admin.site.urls),
     
-    #  La URL raíz  incluye las rutas de 'accounts'.
+    #  La URL raíz  incluye 'accounts'.
     path('', include('accounts.urls')), 
     
     # Rutas de autenticación 
