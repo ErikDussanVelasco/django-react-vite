@@ -24,4 +24,6 @@ urlpatterns = [
 
     #ruta reportes
     path('reportes/', include('reportes.urls', namespace='reportes')),
+    # ruta devoluciones
+    path('devoluciones/', include('devoluciones.urls')),
 ]

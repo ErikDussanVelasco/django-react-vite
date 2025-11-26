@@ -24,6 +24,7 @@ class RoleMenuMiddleware:
                 request.menu_items = [
                     ("Venta", "/ventas/crear/"),
                     ("Mis Ventas", "/ventas/mis-ventas/"),
+                    ("Devoluciones", "/devoluciones/"),
                 ]
             else:
                 # Otros roles por defecto: menú reducido similar al administrador pero sin usuarios
