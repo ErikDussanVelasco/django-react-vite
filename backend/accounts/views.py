@@ -75,11 +75,15 @@ class RegisterTemplateView(View):
                 'username': username
             })
         
-        # Si existe pero está INACTIVO, eliminarlo para permitir re-registro
-        usuario_inactivo = User.objects.filter(email__iexact=email, is_active=False)
-        if usuario_inactivo.exists():
-            usuario_inactivo.delete()  # Eliminar el registro inactivo anterior
-            print(f"🔄 Registro inactivo anterior de {email} eliminado para re-registro")
+        # Si existe (activo o inactivo), mostrar error y re-renderizar el formulario
+        # (No permitimos re-registro automático sobre un email ya registrado)
+        usuario_existente = User.objects.filter(email__iexact=email).exists()
+        if usuario_existente:
+            messages.error(request, 'El correo ya está registrado (si olvidaste la contraseña usa recuperar).')
+            return render(request, 'accounts/register.html', {
+                'email': email,
+                'username': username
+            })
         
         if User.objects.filter(username__iexact=username).exists():
             messages.error(request, 'El nombre de usuario ya está registrado')
