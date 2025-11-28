@@ -225,16 +225,28 @@ def home_redirect(request):
         return HttpResponseForbidden("Tu rol no está configurado correctamente.")
 
 # ==================== ACTIVACIÓN POR ENLACE ====================
+# backend/accounts/views.py
 def activate_account(request, uidb64, token):
-    """Activa la cuenta del usuario con el token de verificación"""
     try:
         uid = urlsafe_base64_decode(uidb64).decode()
         user = User.objects.get(pk=uid)
     except Exception as e:
-        print(f"❌ Error decodificando token: {str(e)}")
+        print(f"⚠️ Error decodificando token: {e}")
         user = None
 
     if user and default_token_generator.check_token(user, token):
         user.is_active = True
         user.save()
-        messages.success
+        messages.success(
+            request,
+            f"Tu cuenta ha sido verificada exitosamente. Ya puedes iniciar sesión."
+        )
+        return redirect('login')
+    else:
+        if user:
+            print(f"⚠️ Token inválido para usuario: {user.email}")
+        messages.error(
+            request,
+            "El enlace no es válido o ha expirado. Por favor regístrate de nuevo."
+        )
+        return redirect('register')

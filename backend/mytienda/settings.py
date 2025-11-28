@@ -116,3 +116,6 @@ REST_FRAMEWORK = {
 
 # Configuración de manejo de errores 
 handler403 = "mi_tienda.views.error_403"
+
+#mercado
+MERCADOPAGO_ACCESS_TOKEN = "TEST-3132937583912024-112717-a32a729cb915f5d642895fe00c17e71c-673511878"  # token de prueba
