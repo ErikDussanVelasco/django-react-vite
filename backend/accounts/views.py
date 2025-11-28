@@ -132,22 +132,26 @@ def verify_otp(request):
         if code == session_code and user_id:
             try:
                 user = User.objects.get(id=user_id)
-                login(request, user, backend='accounts.backends.EmailBackend')
 
+                # Activar al usuario tras OTP exitoso
+                if not user.is_active:
+                    user.is_active = True
+                    user.save(update_fields=["is_active"])
+
+                login(request, user, backend='accounts.backends.EmailBackend')
 
                 # limpiar sesión
                 request.session.pop("otp_code", None)
                 request.session.pop("otp_user_id", None)
 
                 messages.success(request, f"Bienvenido {user.username}, verificación exitosa.")
-                if user.rol == "ADMIN":
-                    return redirect('/inventario/')
-                else:
-                    return redirect('/ventas/crear/')
+                return redirect('/inventario/' if user.rol == "ADMIN" else '/ventas/crear/')
             except User.DoesNotExist:
                 messages.error(request, "Usuario no encontrado.")
         else:
             messages.error(request, "Código inválido o expirado.")
+
+    # GET o POST con error: mostrar formulario
     return render(request, "accounts/verify_otp.html")
 
 # ==================== LOGOUT ====================
