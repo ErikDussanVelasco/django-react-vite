@@ -2,6 +2,7 @@ import random
 import hashlib
 from urllib.parse import urlencode
 
+from django.conf import settings
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_encode
@@ -20,16 +21,24 @@ def generate_otp():
 
 
 def send_otp_email(user, code):
-    """Envía el OTP al correo del usuario"""
+    """Envía el OTP al correo del usuario (no rompe si no hay SMTP)."""
     subject = "🔐 Tu código de verificación"
     message = f"Hola {user.username}, tu código OTP es: {code}. Válido por 5 minutos."
-    send_mail(
-        subject,
-        message,
-        "stockmaster255@gmail.com",  # remitente fijo Gmail
-        [user.email],
-        fail_silently=False,
+    from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None) or getattr(
+        settings, "EMAIL_HOST_USER", ""
     )
+    try:
+        send_mail(
+            subject,
+            message,
+            from_email,
+            [user.email],
+            fail_silently=True,  # evita que Render mate el worker si no hay SMTP
+        )
+        return True
+    except Exception as exc:  # pragma: no cover
+        print(f"❌ Error enviando OTP: {exc}")
+        return False
 
 
 # ==========================
@@ -153,7 +162,8 @@ def send_verification_email(request, user):
         email = EmailMultiAlternatives(
             subject=subject,
             body=f"Verifica tu cuenta en Stock Master: {activation_url}",
-            from_email="stockmaster255@gmail.com",  # 🔒 remitente fijo Gmail
+            from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None)
+            or getattr(settings, "EMAIL_HOST_USER", ""),
             to=[user.email],
         )
         email.attach_alternative(html_message, "text/html")
@@ -164,7 +174,7 @@ def send_verification_email(request, user):
             "X-Mailer": "Django",
         }
 
-        resultado = email.send()
+        resultado = email.send(fail_silently=True)
 
         if resultado:
             print(f"✅ Email de verificación enviado a {user.email}")
@@ -287,13 +297,14 @@ def send_password_reset_email(request, user, token_obj):
         email = EmailMultiAlternatives(
             subject=subject,
             body=f"Restablece tu contraseña aquí: {reset_url}",
-            from_email="stockmaster255@gmail.com",
+            from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None)
+            or getattr(settings, "EMAIL_HOST_USER", ""),
             to=[user.email],
         )
 
         email.attach_alternative(html_message, "text/html")
 
-        resultado = email.send()
+        resultado = email.send(fail_silently=True)
 
         if resultado:
             print(f"✅ Email de recuperación enviado a {user.email}")

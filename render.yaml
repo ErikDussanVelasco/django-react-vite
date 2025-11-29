@@ -37,6 +37,8 @@ services:
         value: https://your-frontend.onrender.com
       - key: DEBUG
         value: false
+      - key: EMAIL_BACKEND
+        value: django.core.mail.backends.console.EmailBackend
       # Email (rellena en el dashboard)
       - key: EMAIL_HOST_USER
         value: ""
