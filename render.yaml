@@ -1,0 +1,49 @@
+# Infra de Render para Django (backend)
+databases:
+  - name: tienda-db
+    plan: free
+    databaseName: tienda
+    user: tienda
+
+services:
+  - type: web
+    name: tienda-backend
+    env: python
+    plan: free
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+      cd backend
+      python manage.py collectstatic --noinput
+    preDeployCommand: cd backend && python manage.py migrate --noinput
+    startCommand: cd backend && gunicorn mytienda.wsgi:application
+    healthCheckPath: /
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: tienda-db
+          property: connectionString
+      - key: DJANGO_SETTINGS_MODULE
+        value: mytienda.settings
+      - key: SECRET_KEY
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: 3.12
+      - key: ALLOWED_HOSTS
+        value: .onrender.com,localhost,127.0.0.1
+      - key: CSRF_TRUSTED_ORIGINS
+        value: https://*.onrender.com
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://your-frontend.onrender.com
+      - key: DEBUG
+        value: false
+      # Email (rellena en el dashboard)
+      - key: EMAIL_HOST_USER
+        value: ""
+      - key: EMAIL_HOST_PASSWORD
+        value: ""
+      - key: DEFAULT_FROM_EMAIL
+        value: ""
+      # Integraciones
+      - key: MERCADOPAGO_ACCESS_TOKEN
+        value: ""
