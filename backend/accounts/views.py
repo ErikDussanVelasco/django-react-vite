@@ -6,11 +6,16 @@ from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.decorators import user_passes_test, login_required
 from django.http import HttpResponseForbidden
-from accounts.models import User
+#Sfrom accounts.models import User
+from .models import PasswordResetToken
+from django.utils import timezone
+from datetime import timedelta 
+import uuid
 from .forms import UsuarioForm
 
+from django.contrib.auth.hashers import make_password
 # ✅ Importa utilidades extendidas
-from .utils import send_verification_email, generate_otp, send_otp_email
+from .utils import send_verification_email, generate_otp, send_otp_email,send_password_reset_email 
 
 User = get_user_model()
 
@@ -106,19 +111,32 @@ class LoginTemplateView(View):
             messages.error(request, 'Por favor completa todos los campos')
             return render(request, 'accounts/login.html')
 
-        user = authenticate(request, email=email, password=password)
+        try:
+            # ✅ BUSCAR por email (no usar authenticate con email)
+            user = User.objects.get(email=email)
+            
+            # ✅ VERIFICAR contraseña manualmente
+            if user.check_password(password):
+                # ✅ Usuario y contraseña válidos
+                # Generar OTP
+                otp = generate_otp()
+                request.session['otp_code'] = otp
+                request.session['otp_user_id'] = user.id
+                send_otp_email(user, otp)
 
-        if user is not None:
-            # Generar OTP y guardar en sesión
-            otp = generate_otp()
-            request.session['otp_code'] = otp
-            request.session['otp_user_id'] = user.id
-            send_otp_email(user, otp)
-
-            messages.info(request, f"Se envió un código OTP a {user.email}. Ingresa el código para continuar.")
-            return redirect('verify_otp')
-        else:
+                messages.info(request, f"Se envió un código OTP a {user.email}. Ingresa el código para continuar.")
+                return redirect('verify_otp')
+            else:
+                # ❌ Contraseña incorrecta
+                messages.error(request, 'Correo o contraseña incorrectos')
+                return render(request, 'accounts/login.html', {'email': email})
+                
+        except User.DoesNotExist:
+            # ❌ Usuario no existe
             messages.error(request, 'Correo o contraseña incorrectos')
+            return render(request, 'accounts/login.html', {'email': email})
+        except Exception as e:
+            messages.error(request, f'Error al iniciar sesión: {str(e)}')
             return render(request, 'accounts/login.html', {'email': email})
 
 # ==================== VERIFICAR OTP ====================
@@ -254,3 +272,99 @@ def activate_account(request, uidb64, token):
             "El enlace no es válido o ha expirado. Por favor regístrate de nuevo."
         )
         return redirect('register')
+
+# ==================== RESETEO DE CONTRASEÑA ====================
+class ResetPasswordView(View):
+    """Vista que permite al usuario ingresar una nueva contraseña"""
+
+    def get(self, request, token):
+        try:
+            token_obj = PasswordResetToken.objects.get(token=token, used=False)
+
+            # Verificar expiración
+            if token_obj.expires_at < timezone.now():
+                messages.error(request, "El enlace ha expirado. Solicita uno nuevo.")
+                return redirect("forgot_password")
+
+        except PasswordResetToken.DoesNotExist:
+            messages.error(request, "El enlace no es válido o ya fue utilizado.")
+            return redirect("forgot_password")
+
+        return render(request, "accounts/reset_password.html", {"token": token})
+
+    def post(self, request, token):
+        password = request.POST.get("password", "").strip()
+        confirm = request.POST.get("confirm", "").strip()
+
+        if not password or not confirm:
+            messages.error(request, "Completa todos los campos.")
+            return render(request, "accounts/reset_password.html", {"token": token})
+
+        if password != confirm:
+            messages.error(request, "Las contraseñas no coinciden.")
+            return render(request, "accounts/reset_password.html", {"token": token})
+
+        if len(password) < 6:
+            messages.error(request, "Debe tener mínimo 6 caracteres.")
+            return render(request, "accounts/reset_password.html", {"token": token})
+
+        try:
+            token_obj = PasswordResetToken.objects.get(token=token, used=False)
+
+            if token_obj.expires_at < timezone.now():
+                messages.error(request, "El enlace ha expirado.")
+                return redirect("forgot_password")
+
+            user = token_obj.user
+            
+            # ✅ USAR set_password() en lugar de make_password()
+            user.set_password(password)
+            user.save()
+
+            token_obj.used = True
+            token_obj.save()
+
+            messages.success(request, "Contraseña actualizada. Ahora puedes iniciar sesión.")
+            return redirect("login")
+
+        except PasswordResetToken.DoesNotExist:
+            messages.error(request, "El enlace no es válido.")
+            return redirect("forgot_password")
+        
+
+
+class ForgotPasswordView(View):
+    """Solicita email y envía token de recuperación"""
+
+    def get(self, request):
+        return render(request, "accounts/forgot_password.html")
+
+    def post(self, request):
+        email = request.POST.get("email", "").strip().lower()
+
+        if not email:
+            messages.error(request, "Ingresa tu correo.")
+            return render(request, "accounts/forgot_password.html")
+
+        try:
+            user = User.objects.get(email=email)
+
+            # Crear token
+            token = uuid.uuid4().hex
+            expires_at = timezone.now() + timedelta(hours=1)
+
+            token_obj = PasswordResetToken.objects.create(
+                user=user,
+                token=token,
+                expires_at=expires_at
+            )
+
+            # ✅ PASAR los 3 argumentos correctos: request, user, token_obj
+            send_password_reset_email(request, user, token_obj)
+
+            messages.success(request, "Se envió un enlace de recuperación a tu correo.")
+            return redirect("login")
+
+        except User.DoesNotExist:
+            messages.error(request, "El correo no está registrado.")
+            return render(request, "accounts/forgot_password.html")
