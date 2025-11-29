@@ -18,7 +18,15 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-dev-key-change-in-production')
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '*']
+#vercel
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.vercel.app']
+CSRF_TRUSTED_ORIGINS = ['https://*.vercel.app']
+
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.vercel.app'
+]
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -50,6 +58,7 @@ MIDDLEWARE = [
    
     'mytienda.middleware.role_menu.RoleMenuMiddleware',
 ]
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 ROOT_URLCONF = 'mytienda.urls'
 
@@ -90,7 +99,9 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_DIRS = [
+    BASE_DIR / 'static'
+    ]
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'accounts.User'
@@ -120,6 +131,4 @@ handler403 = "mi_tienda.views.error_403"
 #mercado
 MERCADOPAGO_ACCESS_TOKEN = "TEST-3132937583912024-112717-a32a729cb915f5d642895fe00c17e71c-673511878"  # token de prueba
 
-import os
-ALLOWED_HOSTS = ["*.vercel.app"]
-DEBUG = False
+
